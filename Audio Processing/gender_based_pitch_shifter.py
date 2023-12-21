@@ -100,8 +100,16 @@ class Executer:
 
             augmented_filename = f"{os.path.splitext(filename)[0]}_aug_{i}.wav"
             output_file_path = os.path.join(self.output_dir, augmented_filename)
-            sf.write(output_file_path, np.concatenate(processed_audio), processor.sample_rate)
-            print(f"Augmented audio saved to {output_file_path}")
+
+            if not os.path.exists(self.output_dir):
+                os.makedirs(self.output_dir)
+
+            try:
+                sf.write(output_file_path, np.concatenate(processed_audio), processor.sample_rate)
+                print(f"Augmented audio saved to {output_file_path}")
+            except Exception as e:
+                print(f"Failed to save {output_file_path}: {e}")
+                
 
 def main():
     parser = argparse.ArgumentParser(description="Audio processing with gender detection and pitch shifting.")
