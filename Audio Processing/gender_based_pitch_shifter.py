@@ -24,7 +24,7 @@ class AudioFileProcessor:
         if thrsh: segment = self.audio[int(self.sample_rate * start):int(self.sample_rate * end)]
         else: segment = self.audio
 
-        shifted_segment = librosa.effects.pitch_shift(segment, self.sample_rate, shift)
+        shifted_segment = librosa.effects.pitch_shift(y=segment, sr=self.sample_rate, n_steps=shift)
         return shifted_segment
 
 @singleton
