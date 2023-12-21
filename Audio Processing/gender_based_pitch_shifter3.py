@@ -1,11 +1,14 @@
 import os
-import argparse
 import librosa
+import argparse
 import numpy as np
 from tqdm import tqdm
 import soundfile as sf
 from inaSpeechSegmenter import Segmenter
 from singleton_decorator import singleton
+from sklearn.mixture import GaussianMixture
+from sklearn.preprocessing import StandardScaler
+
 
 class AudioData:
     def __init__(self, filename, audio, sample_rate):
@@ -27,14 +30,20 @@ class SFFAnalyzer:
         self.thrsh = thrsh
         self.input_dir = input_dir
         self.sample_rate = sample_rate
-        self.audio_files = []
+        self.audio_files, self.male_sffs, self.female_sffs = [], [], []
 
     def analyze_directory(self):
         for filename in tqdm(os.listdir(self.input_dir), desc="Analyzing Audio Files"):
             if filename.endswith(".wav"):
                 self.analyze_file(filename)
+        
+        male_distribution = np.array(self.male_sffs).reshape(-1, 1)
+        female_distribution = np.array(self.female_sffs).reshape(-1, 1)
 
-        return self.calculate_stats()
+        male_stats = self._fit_gaussian_mixture(male_distribution)
+        female_stats = self._fit_gaussian_mixture(female_distribution)
+
+        return male_stats, female_stats
 
     def analyze_file(self, filename):
         file_path = os.path.join(self.input_dir, filename)
@@ -49,6 +58,12 @@ class SFFAnalyzer:
                 else: segment_audio = audio
 
                 sff = self.calculate_sff(segment_audio)
+
+                if label == 'male':
+                    self.male_sffs.append(sff)
+                elif label == 'female':
+                    self.female_sffs.append(sff)
+
                 audio_data.sff_data.append((label, sff, start, end))
 
         self.audio_files.append(audio_data)
@@ -58,31 +73,41 @@ class SFFAnalyzer:
         pitch = np.max(pitches)
         return pitch
 
-    def calculate_stats(self):
-        male_sffs = []
-        female_sffs = []
-        for audio_data in self.audio_files:
-            for gender, sff, _, _ in audio_data.sff_data:
-                if gender == 'male':
-                    male_sffs.append(sff)
-                elif gender == 'female':
-                    female_sffs.append(sff)
-
-        male_stats = self._calculate_stats(male_sffs)
-        female_stats = self._calculate_stats(female_sffs)
-
-        return male_stats, female_stats
-
     @staticmethod
-    def _calculate_stats(sff_values):
-        if not sff_values:  # Handle empty lists
-            return {'min': 0, 'max': 0, 'mean': 0, 'median': 0}
-        return {
-            'min': min(sff_values),
-            'max': max(sff_values),
-            'mean': np.mean(sff_values),
-            'median': np.median(sff_values)
+    def _fit_gaussian_mixture(distribution, max_components=10):
+        # Standardize the distribution
+        scaler = StandardScaler()
+        distribution_scaled = scaler.fit_transform(distribution)
+
+        no = 0
+        best_gmm = None
+        lowest_bic = np.infty
+        lowest_aic = np.infty
+
+        # Test different numbers of components
+        for n_components in tqdm(range(1, max_components + 1), desc="Fitting GMMs"):
+            gmm = GaussianMixture(n_components=n_components)
+            gmm.fit(distribution_scaled)
+            bic = gmm.bic(distribution_scaled)
+            aic = gmm.aic(distribution_scaled)
+
+            if bic < lowest_bic:
+                no = n_components
+                lowest_bic = bic
+                best_gmm = gmm
+            if aic < lowest_aic:
+                no = n_components
+                lowest_aic = aic
+                best_gmm = gmm
+
+        print(f"best gmm has been found with {no} components")
+        # Extract statistics from the best GMM model
+        stats = {
+            'mean': scaler.inverse_transform([best_gmm.means_[0]])[0][0],
+            'std': scaler.scale_[0]
         }
+
+        return stats
 
 class AudioFileProcessor:
     def __init__(self, audio_data):
@@ -101,26 +126,25 @@ class AudioFileProcessor:
 @singleton
 class PitchShifter:
     def __init__(self, male_stats, female_stats):
-        self.male_stats = male_stats
-        self.female_stats = female_stats
+        self.male_mean = male_stats['mean']
+        self.male_std = male_stats['std']
+        self.female_mean = female_stats['mean']
+        self.female_std = female_stats['std']
 
-    def calculate_shift_amount(self, gender, sff):
-        SCALE_FACTOR = 0.1  # Adjust based on testing
+    def calculate_shift_amount(self, gender, sff, aug_index):
+        # Base shift calculation remains the same
+        target_mean = self.female_mean if gender == 'male' else self.male_mean
+        target_std = self.female_std if gender == 'male' else self.male_std
+        basic_shift = target_mean - sff
+        shift_amount = basic_shift * (target_std / self.male_std if gender == 'male' else target_std / self.female_std)
 
-        # Select appropriate stats for current and target genders
-        current_stats = self.male_stats if gender == 'male' else self.female_stats
-        target_stats = self.female_stats if gender == 'male' else self.male_stats
+        # Introduce variability based on augmentation index
+        multiplier = 1 + (aug_index * 0.2)  # 20% increase per augmentation
+        varied_shift = shift_amount * multiplier
 
-        # Normalize current SFF
-        normalized_sff = (sff - current_stats['min']) / (current_stats['max'] - current_stats['min'])
+        print(varied_shift)
 
-        # Normalize target SFF (mean of opposite gender)
-        normalized_target = (target_stats['median'] - target_stats['min']) / (target_stats['max'] - target_stats['min'])
-
-        # Calculate shift amount and apply scaling factor
-        shift_amount = (normalized_target - normalized_sff) * SCALE_FACTOR
-
-        return shift_amount
+        return 5
 
 class Executer:
     def __init__(self, male_stats, female_stats, **kwargs):
@@ -136,11 +160,11 @@ class Executer:
     def process_file(self, audio_data):
         processor = AudioFileProcessor(audio_data)
 
-        for i in range(self.num_augmentations):
+        for i in tqdm(range(1, self.num_augmentations+1, 1), desc="Process Files"):
             processed_audio = []
             for label, sff, start, end in audio_data.sff_data:
                 if label in ['male', 'female']:
-                    shift_amount = self.shifter.calculate_shift_amount(label, sff)
+                    shift_amount = self.shifter.calculate_shift_amount(label, sff, i)
                     shifted_segment = processor.apply_pitch_shift(start, end, shift_amount, self.thrsh)
                     processed_audio.append(shifted_segment)
 
@@ -162,9 +186,9 @@ def main():
     parser.add_argument("--output_dir", required=True, help="Output directory for processed audio.")
     parser.add_argument("--input_dir", required=True, help="Input directory containing audio files.")
     parser.add_argument("--sample_rate", required=False, type=int, default=16000, help="Sample rate for audio processing.")
-    parser.add_argument("--thrsh", required=False, action='store_true', help="To completely augment (value:True) or only change the part (value:False) in which the speaker speaks.")
     parser.add_argument("--num_augmentations", required=False, type=int, default=1, help="Number of augmentations per audio file.")
-
+    parser.add_argument("--thrsh", required=False, action='store_true', help="To completely augment (value:True) or only change the part (value:False) in which the speaker speaks.")
+    
     args = parser.parse_args()
 
     analyzer = SFFAnalyzer(args.input_dir, args.sample_rate, args.thrsh)  # Assuming a fixed sample rate for simplicity
