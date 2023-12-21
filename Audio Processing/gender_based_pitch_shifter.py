@@ -91,7 +91,7 @@ def main():
     parser = argparse.ArgumentParser(description="Audio processing with gender detection and pitch shifting.")
 
     parser.add_argument("--output_dir", required=True, help="Output directory for processed audio.")
-    parser.add_argument("--input_dir", required=True, help="Input directory containing audio files.")
+    parser.add_argument("--input_dir", nargs="+", required=True, help="Input directory containing audio files.")
     parser.add_argument("--min_shift", required=False, type=float, default=0.2, help="Minimum pitch shift factor.")
     parser.add_argument("--max_shift", required=False, type=float, default=1.2, help="Maximum pitch shift factor.")
     parser.add_argument("--sample_rate", required=False, type=int, default=16000, help="Sample rate for audio processing.")
