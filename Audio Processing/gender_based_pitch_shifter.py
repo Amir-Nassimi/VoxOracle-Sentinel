@@ -29,9 +29,25 @@ class AudioFileProcessor:
 
 @singleton
 class PitchShifter:
-    def __init__(self, min_shift, max_shift):
-        self.min_shift = min_shift
-        self.max_shift = max_shift
+    def __init__(self):
+        self._min_shift = 0.2
+        self._max_shift = 1.2
+    
+    @property
+    def min_shift(self):
+        return self._min_shift
+    
+    @min_shift.setter
+    def min_shift(self, value):
+        self._min_shift = value
+
+    @property
+    def max_shift(self):
+        return self._max_shift
+    
+    @max_shift.setter
+    def max_shift(self, value):
+        self._max_shift = value
 
     def calculate_sff(self, audio, sr):
         pitches, magnitudes = librosa.piptrack(y=audio, sr=sr)
@@ -91,7 +107,7 @@ def main():
     parser = argparse.ArgumentParser(description="Audio processing with gender detection and pitch shifting.")
 
     parser.add_argument("--output_dir", required=True, help="Output directory for processed audio.")
-    parser.add_argument("--input_dir", nargs="+", required=True, help="Input directory containing audio files.")
+    parser.add_argument("--input_dir", required=True, help="Input directory containing audio files.")
     parser.add_argument("--min_shift", required=False, type=float, default=0.2, help="Minimum pitch shift factor.")
     parser.add_argument("--max_shift", required=False, type=float, default=1.2, help="Maximum pitch shift factor.")
     parser.add_argument("--sample_rate", required=False, type=int, default=16000, help="Sample rate for audio processing.")
@@ -101,7 +117,8 @@ def main():
     args = parser.parse_args()
 
     executer = Executer(args.input_dir, args.output_dir, args.sample_rate, args.num_augmentations, args.thrsh)
-    executer.shifter = PitchShifter(args.min_shift, args.max_shift)
+    executer.shifter.min_shift = args.min_shift
+    executer.shifter.max_shift = args.max_shift
     executer.process_directory()
 
 if __name__ == "__main__":
