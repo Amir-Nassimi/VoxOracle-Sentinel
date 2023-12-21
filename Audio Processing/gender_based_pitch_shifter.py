@@ -21,6 +21,7 @@ class AudioFileProcessor:
         self.audio, self.sample_rate = librosa.load(file_path, sr=sample_rate)
 
     def apply_pitch_shift(self, start, end, shift, thrsh):
+        print(f"Applying pitch shift: Start: {start}, End: {end}, Shift: {shift}, Threshold: {thrsh}")
         if thrsh: segment = self.audio[int(self.sample_rate * start):int(self.sample_rate * end)]
         else: segment = self.audio
 
@@ -55,6 +56,7 @@ class PitchShifter:
         return pitch
 
     def get_unique_shift_amount(self, gender, sff, aug_index, num_augmentations):
+        print(f"Calculating shift amount: Gender: {gender}, SFF: {sff}, Index: {aug_index}, Num Augmentations: {num_augmentations}")
         if gender == 'male' and sff >= 130:
             shift_range = np.linspace(self.min_shift, self.max_shift, num_augmentations)
         elif gender == 'female' and sff < 180:
@@ -116,8 +118,8 @@ def main():
 
     parser.add_argument("--output_dir", required=True, help="Output directory for processed audio.")
     parser.add_argument("--input_dir", required=True, help="Input directory containing audio files.")
-    parser.add_argument("--min_shift", required=False, type=float, default=0.2, help="Minimum pitch shift factor.")
-    parser.add_argument("--max_shift", required=False, type=float, default=1.2, help="Maximum pitch shift factor.")
+    parser.add_argument("--min_shift", required=False, type=float, default=1.2, help="Minimum pitch shift factor.")
+    parser.add_argument("--max_shift", required=False, type=float, default=3.5, help="Maximum pitch shift factor.")
     parser.add_argument("--sample_rate", required=False, type=int, default=16000, help="Sample rate for audio processing.")
     parser.add_argument("--num_augmentations", required=False, type=int, default=1, help="Number of augmentations per audio file.")
     parser.add_argument("--thrsh", required=False, type=bool, default=False, help="To Completely Augment (value:False) or Only change the part (value:True) in which the speaker speaks.")
