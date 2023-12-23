@@ -1,8 +1,9 @@
 import os
+import glob
 import librosa
 import argparse
 import numpy as np
-import glob
+import soundfile as sf
 from multiprocessing import Pool
 
 class AudioProcessor:
@@ -38,7 +39,7 @@ class AudioProcessor:
             noisy_audio = audio * self.noise_factor
             output_path = self.get_output_path(audio_path)
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            librosa.output.write_wav(output_path, noisy_audio, sr)
+            sf.write(output_path, noisy_audio, sr)
             print(f"Processed: {audio_path}")
 
         except Exception as e:
@@ -57,9 +58,9 @@ class AudioProcessor:
 
 def main():
     parser = argparse.ArgumentParser(description="Audio processing script")
-    parser.add_argument("--input_dirs", nargs='+', help="Input directories containing audio files.")
-    parser.add_argument("--output_base_dir", required=True, help="Base output directory for processed audio.")
-    parser.add_argument("--input_length", type=float, required=True, help="Desired input length in seconds.")
+    parser.add_argument("--input_dirs", nargs='+', required=True, help="Input directories containing audio files.")
+    parser.add_argument("--output_base_dir", type=str, required=True, help="Base output directory for processed audio.")
+    parser.add_argument("--input_length", type=float, required=False, help="Desired input length in seconds.")
     parser.add_argument("--sample_rate", type=int, required=False, default=16000, help="Sample rate for audio.")
     parser.add_argument("--noise_factor", type=float, default=0.1, help="Multiplication factor for noise.")
     args = parser.parse_args()
