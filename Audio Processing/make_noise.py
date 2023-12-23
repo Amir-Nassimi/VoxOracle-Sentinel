@@ -57,7 +57,7 @@ class AudioProcessor:
 
 def main():
     parser = argparse.ArgumentParser(description="Audio processing script")
-    parser.add_argument("input_dirs", nargs='+', help="Input directories containing audio files.")
+    parser.add_argument("--input_dirs", nargs='+', help="Input directories containing audio files.")
     parser.add_argument("--output_base_dir", required=True, help="Base output directory for processed audio.")
     parser.add_argument("--input_length", type=float, required=True, help="Desired input length in seconds.")
     parser.add_argument("--sample_rate", type=int, required=False, default=16000, help="Sample rate for audio.")
