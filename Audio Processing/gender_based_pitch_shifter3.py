@@ -131,20 +131,34 @@ class PitchShifter:
         self.female_mean = female_stats['mean']
         self.female_std = female_stats['std']
 
-    def calculate_shift_amount(self, gender, sff, aug_index):
-        # Base shift calculation remains the same
+    # def calculate_shift_amount(self, gender, sff, aug_index):
+    #     # Base shift calculation remains the same
+    #     target_mean = self.female_mean if gender == 'male' else self.male_mean
+    #     target_std = self.female_std if gender == 'male' else self.male_std
+    #     basic_shift = target_mean - sff
+    #     shift_amount = basic_shift * (target_std / self.male_std if gender == 'male' else target_std / self.female_std)
+
+    #     # Introduce variability based on augmentation index
+    #     multiplier = 1 + (aug_index * 0.2)  # 20% increase per augmentation
+    #     varied_shift = shift_amount * multiplier
+
+    #     print(varied_shift)
+
+    #     return 5
+    
+    def calculate_shift_amount(self, gender, sff, aug_indx):
+        # Normalize the sff value
+        normalized_sff = (sff - self.male_mean) / self.male_std if gender == 'male' else (sff - self.female_mean) / self.female_std
+
+        # Determine the target mean and standard deviation based on gender
         target_mean = self.female_mean if gender == 'male' else self.male_mean
         target_std = self.female_std if gender == 'male' else self.male_std
-        basic_shift = target_mean - sff
-        shift_amount = basic_shift * (target_std / self.male_std if gender == 'male' else target_std / self.female_std)
 
-        # Introduce variability based on augmentation index
-        multiplier = 1 + (aug_index * 0.2)  # 20% increase per augmentation
-        varied_shift = shift_amount * multiplier
+        # Calculate the shift amount
+        shift_amount = (target_mean - normalized_sff) * target_std
 
-        print(varied_shift)
+        return shift_amount
 
-        return 5
 
 class Executer:
     def __init__(self, male_stats, female_stats, **kwargs):
