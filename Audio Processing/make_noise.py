@@ -28,13 +28,17 @@ class AudioProcessor:
         try:
             audio, sr = librosa.load(audio_path, sr=self.sample_rate)
 
-            if len(audio) < int(self.input_length * self.sample_rate):
-                total_padding = int(self.input_length * self.sample_rate) - len(audio)
+            # Convert input_length from milliseconds to seconds, then to samples
+            desired_length_in_samples = int((self.input_length / 1000.0) * self.sample_rate)
+
+            if len(audio) < desired_length_in_samples:
+                total_padding = desired_length_in_samples - len(audio)
                 padding_start = total_padding // 2
                 padding_end = total_padding - padding_start
                 audio = np.pad(audio, (padding_start, padding_end), 'constant')
             else:
-                audio = audio[:int(self.input_length * self.sample_rate)]
+                # Crop the audio to the desired length
+                audio = audio[:desired_length_in_samples]
 
             noisy_audio = audio * self.noise_factor
             output_path = self.get_output_path(audio_path)
@@ -48,7 +52,6 @@ class AudioProcessor:
     def process_audio(self):
         pool = Pool()
         audio_paths = []
-
         for input_dir in self.input_dirs:
             audio_paths.extend(glob.glob(os.path.join(input_dir, '**', '*.wav'), recursive=True))
 
