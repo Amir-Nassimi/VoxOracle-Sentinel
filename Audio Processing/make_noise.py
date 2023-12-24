@@ -80,8 +80,8 @@ def main():
     parser.add_argument("--output_base_dir", type=str, required=True, help="Base output directory for processed audio.")
     parser.add_argument("--input_length", type=float, required=False, help="Desired input length in seconds.")
     parser.add_argument("--sample_rate", type=int, required=False, default=16000, help="Sample rate for audio.")
-    parser.add_argument("--silence_factor", type=float, default=0.1, help="Multiplication factor to silence audio.")
-    parser.add_argument("--noise_factor", type=float, default=0.008, help="Multiplication factor for noise.")
+    parser.add_argument("--silence_factor", type=float, default=0.01, help="Multiplication factor to silence audio.")
+    parser.add_argument("--noise_factor", type=float, default=0.0007, help="Multiplication factor for noise.")
     args = parser.parse_args()
 
     audio_processor = AudioProcessor(**vars(args))
