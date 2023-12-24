@@ -2,7 +2,6 @@ import os
 import glob
 import librosa
 import argparse
-import numpy as np
 import soundfile as sf
 from multiprocessing import Pool
 
@@ -31,14 +30,20 @@ class AudioProcessor:
             # Convert input_length from milliseconds to seconds, then to samples
             desired_length_in_samples = int((self.input_length / 1000.0) * self.sample_rate)
 
-            if len(audio) < desired_length_in_samples:
-                total_padding = desired_length_in_samples - len(audio)
-                padding_start = total_padding // 2
-                padding_end = total_padding - padding_start
-                audio = np.pad(audio, (padding_start, padding_end), 'constant')
+            if len(audio) >= desired_length_in_samples:
+                # Find the midpoint of the audio
+                midpoint = len(audio) // 2
+
+                # Calculate start and end points for cropping
+                half_length = desired_length_in_samples // 2
+                start = max(midpoint - half_length, 0)
+                end = start + desired_length_in_samples
+
+                # Crop the audio around the midpoint
+                audio = audio[start:end]
             else:
-                # Crop the audio to the desired length
-                audio = audio[:desired_length_in_samples]
+                print(f"Audio file too short to process: {audio_path}")
+                return
 
             noisy_audio = audio * self.noise_factor
             output_path = self.get_output_path(audio_path)
