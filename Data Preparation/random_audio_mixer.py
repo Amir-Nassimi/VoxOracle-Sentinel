@@ -17,7 +17,7 @@ def get_audio_files_recursive(directory):
     return glob(os.path.join(directory, '**', '*.wav'), recursive=True)
 
 
-def process_audio(file1, file2, output_dir, sample_rate):
+def process_audio(file1, file2, folder2, output_dir, sample_rate):
     # Load both audio files with the specified sample rate
     audio1, sr1 = librosa.load(file1, sr=sample_rate)
     audio2, _ = librosa.load(file2, sr=sample_rate)
@@ -35,12 +35,13 @@ def process_audio(file1, file2, output_dir, sample_rate):
     # Add the audio files
     mixed_audio = audio1 + audio2
 
-    # Ensure the audio does not exceed -1 to 1 range
-    mixed_audio = np.clip(mixed_audio, -1, 1)
+    # Create the output path preserving the structure of folder2
+    relative_path = os.path.relpath(file2, folder2)
+    output_subdir = os.path.join(output_dir, os.path.dirname(relative_path))
+    os.makedirs(output_subdir, exist_ok=True)
 
-    # Save the mixed audio
     output_filename = os.path.basename(file1).replace('.wav', '_mixed.wav')
-    output_path = os.path.join(output_dir, output_filename)
+    output_path = os.path.join(output_subdir, output_filename)
     sf.write(output_path, mixed_audio, sr1)
 
     return True
@@ -60,7 +61,7 @@ def mix_audios(folder1, folder2, output_dir, sample_rate):
         success = False
         while files1 and not success:
             file1 = files1.pop(random.randint(0, len(files1) - 1))
-            success = process_audio(file1, file2, output_dir, sample_rate)
+            success = process_audio(file1, file2, folder2, output_dir, sample_rate)
 
 
 def main():
