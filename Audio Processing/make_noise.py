@@ -2,16 +2,18 @@ import os
 import glob
 import librosa
 import argparse
+import numpy as np
 import soundfile as sf
 from multiprocessing import Pool
 
 class AudioProcessor:
-    def __init__(self, input_dirs, output_base_dir, input_length, sample_rate, noise_factor):
-        self.input_dirs = input_dirs
-        self.output_base_dir = output_base_dir
-        self.input_length = input_length
-        self.sample_rate = sample_rate
-        self.noise_factor = noise_factor
+    def __init__(self, **kwargs):
+        self.input_dirs = kwargs.get("input_dirs")
+        self.output_base_dir = kwargs.get("output_base_dir")
+        self.input_length = kwargs.get("input_length")
+        self.sample_rate = kwargs.get("sample_rate")
+        self.noise_factor = kwargs.get("noise_factor")
+        self.silence_factor = kwargs.get("silence_factor")
 
     def get_output_path(self, input_path):
         # Find the base input directory that is a parent of the input path
@@ -45,7 +47,15 @@ class AudioProcessor:
                 print(f"Audio file too short to process: {audio_path}")
                 return
 
-            noisy_audio = audio * self.noise_factor
+            # Generate random noise
+            noise = np.random.normal(0, 1, len(audio)) * self.noise_factor
+
+            # Mix the noise with the audio
+            noisy_audio = (audio * self.silence_factor) + noise
+
+            # Ensure the noisy audio does not exceed -1 to 1 range
+            noisy_audio = np.clip(noisy_audio, -1, 1)
+
             output_path = self.get_output_path(audio_path)
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             sf.write(output_path, noisy_audio, sr)
@@ -70,10 +80,11 @@ def main():
     parser.add_argument("--output_base_dir", type=str, required=True, help="Base output directory for processed audio.")
     parser.add_argument("--input_length", type=float, required=False, help="Desired input length in seconds.")
     parser.add_argument("--sample_rate", type=int, required=False, default=16000, help="Sample rate for audio.")
-    parser.add_argument("--noise_factor", type=float, default=0.1, help="Multiplication factor for noise.")
+    parser.add_argument("--silence_factor", type=float, default=0.1, help="Multiplication factor to silence audio.")
+    parser.add_argument("--noise_factor", type=float, default=0.008, help="Multiplication factor for noise.")
     args = parser.parse_args()
 
-    audio_processor = AudioProcessor(args.input_dirs, args.output_base_dir, args.input_length, args.sample_rate, args.noise_factor)
+    audio_processor = AudioProcessor(**vars(args))
     audio_processor.process_audio()
 
 if __name__ == "__main__":
