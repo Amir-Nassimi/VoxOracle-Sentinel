@@ -3,6 +3,7 @@ import random
 import librosa
 import argparse
 import numpy as np
+from tqdm import tqdm
 from glob import glob
 import soundfile as sf
 
@@ -55,7 +56,7 @@ def mix_audios(folder1, folder2, output_dir, sample_rate):
 
     os.makedirs(output_dir, exist_ok=True)
 
-    for file2 in files2:
+    for file2 in tqdm(files2, desc="Processing Files"):
         success = False
         while files1 and not success:
             file1 = files1.pop(random.randint(0, len(files1) - 1))
