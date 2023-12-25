@@ -12,8 +12,8 @@ class DataPreparation:
         self.valid_csv = valid_csv
 
     def load_data(self):
-        train_data = pd.read_pickle(self.train_csv)
-        valid_data = pd.read_pickle(self.valid_csv)
+        train_data = pd.read_csv(self.train_csv)
+        valid_data = pd.read_csv(self.valid_csv)
 
         x_train, y_train = self.process_data(train_data)
         x_valid, y_valid = self.process_data(valid_data, train=False)
@@ -21,8 +21,8 @@ class DataPreparation:
         return x_train, y_train, x_valid, y_valid
 
     def process_data(self, data, train=True):
-        audio_paths = np.array(data['x'].tolist())
-        classes = np.array(data['y'].tolist())
+        audio_paths = np.array(data['file_path'].tolist())  # x
+        classes = np.array(data['label'].tolist())  # y
 
         audio_list = [np.load(audio) for audio in audio_paths]
         audio_array = np.array(audio_list)
