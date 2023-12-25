@@ -13,7 +13,7 @@ from tensorflow.keras.layers import Dense, BatchNormalization, Dropout
 @singleton
 class ModelBuilder:
     def __init__(self, input_shape):
-        self.build_model = DenseNet121(weights='imagenet', include_top=False, pooling='avg', input_shape=input_shape)
+        self.base_model = DenseNet121(weights='imagenet', include_top=False, pooling='avg', input_shape=input_shape)
 
     def build_model(self, no_class):
         x = BatchNormalization()(self.base_model.output)
@@ -22,7 +22,7 @@ class ModelBuilder:
         x = Dense(512, activation='relu')(x)
         x = BatchNormalization()(x)
         x = Dropout(0.5)(x)
-        preds = Dense(no_class , activation='softmax')(x)
+        preds = Dense(no_class, activation='softmax')(x)
 
         model = Model(inputs=self.base_model.input, outputs=preds)
         return model
