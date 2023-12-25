@@ -10,6 +10,7 @@ class DataPreparation:
     def __init__(self, train_csv, valid_csv):
         self.train_csv = train_csv
         self.valid_csv = valid_csv
+        self.label_encoder = None
 
     def load_data(self):
         train_data = pd.read_csv(self.train_csv)
@@ -28,9 +29,9 @@ class DataPreparation:
         audio_array = np.array(audio_list)
 
         if train:
-            self.labelencoder = LabelEncoder()
-            classes = to_categorical(self.labelencoder.fit_transform(classes))
+            self.label_encoder = LabelEncoder()
+            classes = to_categorical(self.label_encoder.fit_transform(classes))
         else:
-            classes = to_categorical(self.labelencoder.transform(classes))
+            classes = to_categorical(self.label_encoder.transform(classes))
 
         return audio_array, classes
