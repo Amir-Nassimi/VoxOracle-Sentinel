@@ -23,7 +23,6 @@ class HowToRDTrainer:
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
         #os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
 
-
     def run(self):
         x_train, y_train, x_valid, y_valid = self.data_preparation.load_data()
         model = self.model_builder.build_model(self.classes)
