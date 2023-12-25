@@ -38,8 +38,8 @@ class TrainingManager:
 
     def train(self, batch_size, epochs):
         _, y = self.train_data[0]
-        n_batches = math.ceil(len(y) / batch_size)
-        checkpoint_filepath = f'{self.checkpoint_dir}/ckpt'
+        #n_batches = math.ceil(len(y) / batch_size)
+        checkpoint_filepath = f'{self.checkpoint_dir}/ckpt.h5'
 
         model_checkpoint_callback = ModelCheckpoint(
             filepath=checkpoint_filepath,
@@ -48,7 +48,7 @@ class TrainingManager:
             save_best_only=True,  # Save only the best model
             save_weights_only=True,  # Change to True if you want to save only weights
             verbose=1,
-            save_freq=50 * n_batches)
+            save_freq='epoch')
 
         tensorboard_callback = TensorBoard(log_dir=os.path.join(self.logdir,
                                                                 datetime.now().strftime("%Y-%m-%d-%H-%M-%S")))
