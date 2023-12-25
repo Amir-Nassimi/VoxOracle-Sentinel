@@ -10,7 +10,7 @@ class HowToRDTrainer:
 
         self.epoch = kwargs.get('epoch')
         self.batch = kwargs.get('b_size')
-        self.log_dir = kwargs.get('log_dir')
+        self.log_dir = kwargs.get('logdir')
         self.classes = kwargs.get('classes')
         self.checkpoint_dir = kwargs.get('checkpoint_dir')
         self.data_preparation = DataPreparation(kwargs.get('train_csv'), kwargs.get('valid_csv'))
