@@ -1,12 +1,10 @@
 import numpy as np
 import pandas as pd
-from singleton_decorator import singleton
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.utils import Sequence, to_categorical
 from tensorflow.keras.applications.densenet import preprocess_input
 
 
-@singleton
 class DataPreparation(Sequence):
     def __init__(self, csv_file, batch_size, dim, n_channels, n_classes, shuffle=True):
         self.dim = dim
