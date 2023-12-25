@@ -2,36 +2,47 @@ import numpy as np
 import pandas as pd
 from singleton_decorator import singleton
 from sklearn.preprocessing import LabelEncoder
-from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.utils import Sequence, to_categorical
+from tensorflow.keras.applications.densenet import preprocess_input
 
 
 @singleton
-class DataPreparation:
-    def __init__(self, train_csv, valid_csv):
-        self.train_csv = train_csv
-        self.valid_csv = valid_csv
-        self.label_encoder = None
+class DataPreparation(Sequence):
+    def __init__(self, csv_file, batch_size, dim, n_channels, n_classes, shuffle=True):
+        self.dim = dim
+        self.batch_size = batch_size
+        self.data = pd.read_csv(csv_file)
+        self.n_channels = n_channels
+        self.n_classes = n_classes
+        self.shuffle = shuffle
+        self.indexes = np.arange(len(self.data))
+        self.label_encoder = LabelEncoder()
+        self.labels = self.label_encoder.fit_transform(self.data['label'].tolist())
+        self.on_epoch_end()
 
-    def load_data(self):
-        train_data = pd.read_csv(self.train_csv)
-        valid_data = pd.read_csv(self.valid_csv)
+    def __len__(self):
+        return int(np.floor(len(self.data) / self.batch_size))
 
-        x_train, y_train = self.process_data(train_data)
-        x_valid, y_valid = self.process_data(valid_data, train=False)
+    def __getitem__(self, index):
+        indexes = self.indexes[index * self.batch_size:(index + 1) * self.batch_size]
+        temp_data = self.data.iloc[indexes]
+        X, y = self.__data_generation(temp_data)
+        return X, y
 
-        return x_train, y_train, x_valid, y_valid
+    def on_epoch_end(self):
+        if self.shuffle:
+            np.random.shuffle(self.indexes)
 
-    def process_data(self, data, train=True):
-        audio_paths = np.array(data['file_path'].tolist())  # x
-        classes = np.array(data['label'].tolist())  # y
+    def __data_generation(self, temp_data):
+        X = np.empty((self.batch_size, *self.dim, self.n_channels))
+        y = np.empty((self.batch_size), dtype=int)
 
-        audio_list = [np.load(audio) for audio in audio_paths]
-        audio_array = np.array(audio_list)
+        for i, row in enumerate(temp_data.itertuples()):
+            spect = np.load(row.file_path)
+            spect = np.stack((spect, spect, spect), axis=-1)  # Convert to 3 channels
+            spect = preprocess_input(spect)  # Preprocess for DenseNet
 
-        if train:
-            self.label_encoder = LabelEncoder()
-            classes = to_categorical(self.label_encoder.fit_transform(classes))
-        else:
-            classes = to_categorical(self.label_encoder.transform(classes))
+            X[i,] = spect
+            y[i] = self.label_encoder.transform([row.label])[0]
 
-        return audio_array, classes
+        return X, to_categorical(y, num_classes=self.n_classes)
