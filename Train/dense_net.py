@@ -37,10 +37,8 @@ class TrainingManager:
         self.valid_data = valid_data
 
     def train(self, batch_size, epochs):
-        x_train, y_train = self.train_data
-        x_valid, y_valid = self.valid_data
-
-        n_batches = math.ceil(len(x_train) / batch_size)
+        _, y = self.train_data[0]
+        n_batches = math.ceil(len(y) / batch_size)
         checkpoint_filepath = f'{self.checkpoint_dir}/ckpt'
 
         model_checkpoint_callback = ModelCheckpoint(
@@ -55,5 +53,5 @@ class TrainingManager:
                                                                 datetime.now().strftime("%Y-%m-%d-%H-%M-%S")))
 
         self.model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
-        self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(x_valid, y_valid),
+        self.model.fit(self.train_data, epochs=epochs, batch_size=batch_size, validation_data=self.valid_data,
                        callbacks=[model_checkpoint_callback, tensorboard_callback])
