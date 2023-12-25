@@ -42,10 +42,11 @@ class TrainingManager:
         checkpoint_filepath = f'{self.checkpoint_dir}/ckpt'
 
         model_checkpoint_callback = ModelCheckpoint(
-            checkpoint_filepath,
-            save_weights_only=True,
+            filepath=checkpoint_filepath,
             monitor='val_accuracy',
             mode='max',
+            save_best_only=True,  # Save only the best model
+            save_weights_only=True,  # Change to True if you want to save only weights
             verbose=1,
             save_freq=50 * n_batches)
 
