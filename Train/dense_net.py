@@ -51,7 +51,8 @@ class TrainingManager:
             verbose=1,
             save_freq=50 * n_batches)
 
-        tensorboard_callback = TensorBoard(log_dir=os.path.join(self.logdir, datetime.now().strftime("%Y-%m-%d-%H-%M-%S")))
+        tensorboard_callback = TensorBoard(log_dir=os.path.join(self.logdir,
+                                                                datetime.now().strftime("%Y-%m-%d-%H-%M-%S")))
 
         self.model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
         self.model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(x_valid, y_valid),
