@@ -15,7 +15,6 @@ class HowToRDTrainer:
         self.checkpoint_dir = kwargs.get('checkpoint_dir')
         self.data_preparation = DataPreparation(kwargs.get('train_csv'), kwargs.get('valid_csv'))
         self.model_builder = ModelBuilder(input_shape=(100, 301, 3))
-        self.training_manager = None
 
 
     def setup_environment(self):
@@ -26,9 +25,9 @@ class HowToRDTrainer:
     def run(self):
         x_train, y_train, x_valid, y_valid = self.data_preparation.load_data()
         model = self.model_builder.build_model(self.classes)
-        self.training_manager = TrainingManager(model, self.checkpoint_dir, self.log_dir,
-                                                (x_train, y_train), (x_valid, y_valid))
-        self.training_manager.train(batch_size=16, epochs=150)
+        training_manager = TrainingManager(model, self.checkpoint_dir, self.log_dir,
+                                           (x_train, y_train), (x_valid, y_valid))
+        training_manager.train(batch_size=self.batch, epochs=self.epoch)
 
 
 def parse_arguments():
