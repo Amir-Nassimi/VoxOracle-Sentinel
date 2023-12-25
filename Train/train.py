@@ -13,8 +13,23 @@ class HowToRDTrainer:
         self.log_dir = kwargs.get('logdir')
         self.classes = kwargs.get('classes')
         self.checkpoint_dir = kwargs.get('checkpoint_dir')
-        self.data_preparation = DataPreparation(kwargs.get('train_csv'), kwargs.get('valid_csv'))
-        self.model_builder = ModelBuilder(input_shape=(100, 301, 3))
+        self.in_shape = tuple(map(int, kwargs.get('in_shape').split(',')))
+
+        self.train_gen = DataPreparation(kwargs.get('train_csv'),
+                                         batch_size=self.batch,
+                                         dim=self.in_shape,
+                                         n_channels=3,
+                                         n_classes=self.classes,
+                                         shuffle=True)
+
+        self.valid_gen = DataPreparation(kwargs.get('valid_csv'),
+                                         batch_size=self.batch,
+                                         dim=self.in_shape,
+                                         n_channels=3,
+                                         n_classes=self.classes,
+                                         shuffle=True)
+
+        self.model_builder = ModelBuilder(input_shape=self.in_shape+(3,))
 
 
     def setup_environment(self):
@@ -23,10 +38,9 @@ class HowToRDTrainer:
         #os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
 
     def run(self):
-        x_train, y_train, x_valid, y_valid = self.data_preparation.load_data()
         model = self.model_builder.build_model(self.classes)
         training_manager = TrainingManager(model, self.checkpoint_dir, self.log_dir,
-                                           (x_train, y_train), (x_valid, y_valid))
+                                           self.train_gen, self.valid_gen)
         training_manager.train(batch_size=self.batch, epochs=self.epoch)
 
 
@@ -40,6 +54,7 @@ def parse_arguments():
     parser.add_argument('--checkpoint_dir', type=str, required=True, help='path to save checkpoints.')
     parser.add_argument('--train_csv', type=str, required=True, help='path to .csv file for train dataset')
     parser.add_argument('--valid_csv', type=str, required=True, help='path to .csv file for validation dataset')
+    parser.add_argument('--in_shape', type=str, default='128,60', required=False, help='The input shape of the model')
     
     return parser.parse_args()
 
