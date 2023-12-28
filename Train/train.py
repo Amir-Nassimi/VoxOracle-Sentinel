@@ -52,7 +52,7 @@ class HowToRDTrainer:
                                            self.train_gen, self.valid_gen, self.test_gen)
         training_manager.train(batch_size=self.batch, epochs=self.epoch)
 
-        test_manager = EvaluationManager(model, f'{self.checkpoint_dir}/ckpt.h5', self.test_gen)
+        test_manager = EvaluationManager(f'{self.checkpoint_dir}/ckpt.keras', self.test_gen)
         test_manager.evaluate()
 
 

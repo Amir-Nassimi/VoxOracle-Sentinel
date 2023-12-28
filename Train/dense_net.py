@@ -5,6 +5,7 @@ from singleton_decorator import singleton
 
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.models import load_model
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.applications import DenseNet121
 from tensorflow.summary import create_file_writer, scalar
@@ -68,7 +69,7 @@ class TrainingManager:
             monitor='val_accuracy',
             mode='max',
             save_best_only=True,  # Save only the best model
-            save_weights_only=True,  # Change to True if you want to save only weights
+            save_weights_only=False,  # Change to True if you want to save only weights
             verbose=1,
             save_freq='epoch')
 
@@ -81,9 +82,9 @@ class TrainingManager:
 
 
 class EvaluationManager:
-    def __init__(self, model, model_pth, test_set):
-        self.model = model
-        self.model.load_weights(model_pth)
+    def __init__(self, model_pth, test_set):
+        self.model = load_model(model_pth)
+        print('Model loaded successfully!')
         self.test_data = test_set
 
     def evaluate(self):
