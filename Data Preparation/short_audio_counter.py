@@ -13,6 +13,7 @@ def remove_silence_from_edges(audio_path, silence_thrsh):
     else:
         return AudioSegment.silent(duration=0)
 
+
 def count_short_audios(input_dirs, threshold_length, silence_thrsh):
     short_audios = 0
 
@@ -31,6 +32,7 @@ def count_short_audios(input_dirs, threshold_length, silence_thrsh):
                     print(f"Error processing {audio_path}: {str(e)}")
 
     return short_audios
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Count short audio files.")
