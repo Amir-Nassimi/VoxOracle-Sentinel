@@ -37,7 +37,6 @@ class DataPreparation(Sequence):
 
         for i, row in enumerate(temp_data.itertuples()):
             spect = np.load(row.file_path)
-            spect = np.stack((spect, spect, spect), axis=-1)  # Convert to 3 channels
             spect = preprocess_input(spect)  # Preprocess for DenseNet
 
             X[i,] = spect
