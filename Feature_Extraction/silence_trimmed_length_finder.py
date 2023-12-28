@@ -3,11 +3,12 @@ import argparse
 from pydub import AudioSegment
 from pydub.silence import split_on_silence, detect_nonsilent
 
+
 def remove_silence(audio, silence_thresh, remove_edge_silence):
     if remove_edge_silence:
-        nonsilent_parts = detect_nonsilent(audio, silence_thresh=silence_thresh)
-        if nonsilent_parts:
-            start, end = nonsilent_parts[0][0], nonsilent_parts[-1][1]
+        non_silent_parts = detect_nonsilent(audio, silence_thresh=silence_thresh)
+        if non_silent_parts:
+            start, end = non_silent_parts[0][0], non_silent_parts[-1][1]
             return audio[start:end]
         else:
             return AudioSegment.silent(duration=0)
@@ -18,10 +19,12 @@ def remove_silence(audio, silence_thresh, remove_edge_silence):
         else:
             return AudioSegment.silent(duration=0)
 
+
 def process_file(file_path, silence_thresh, remove_edge_silence):
     audio = AudioSegment.from_wav(file_path)
     audio_processed = remove_silence(audio, silence_thresh, remove_edge_silence)
     return audio_processed
+
 
 def get_lengths(directory_path, silence_thresh, remove_edge_silence):
     lengths = []
@@ -34,6 +37,7 @@ def get_lengths(directory_path, silence_thresh, remove_edge_silence):
 
     return lengths
 
+
 def calculate_max_and_mean(lengths):
     if lengths:
         max_length = max(lengths)
@@ -41,6 +45,7 @@ def calculate_max_and_mean(lengths):
         return max_length, mean_length
     else:
         return 0, 0
+
 
 def main():
     parser = argparse.ArgumentParser(description="Process audio files and calculate maximum and mean length in milliseconds.")
@@ -54,6 +59,7 @@ def main():
 
     print(f"The mean length of audio files in the directory is {mean_length} milliseconds.")
     print(f"The maximum length of audio files in the directory is {max_length} milliseconds.")
+
 
 if __name__ == "__main__":
     main()
