@@ -1,7 +1,7 @@
 import os
 import argparse
 from data_proc import DataPreparation
-from dense_net import ModelBuilder, TrainingManager
+from dense_net import ModelBuilder, TrainingManager, EvaluationManager
 
 
 class HowToRDTrainer:
@@ -29,8 +29,17 @@ class HowToRDTrainer:
                                          n_classes=self.classes,
                                          shuffle=True)
 
-        self.model_builder = ModelBuilder(input_shape=self.in_shape+(3,))
+        self.test_gen = DataPreparation(kwargs.get('test_csv'),
+                                        batch_size=self.batch,
+                                        dim=self.in_shape,
+                                        n_channels=3,
+                                        n_classes=self.classes,
+                                        shuffle=False)
 
+        label_to_index_mapping = {index: label for index, label in enumerate(self.valid_gen.label_encoder.classes_)}
+        print(f'Labels:\n{label_to_index_mapping}')
+
+        self.model_builder = ModelBuilder(input_shape=self.in_shape+(3,))
 
     def setup_environment(self):
         os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -40,8 +49,11 @@ class HowToRDTrainer:
     def run(self):
         model = self.model_builder.build_model(self.classes)
         training_manager = TrainingManager(model, self.checkpoint_dir, self.log_dir,
-                                           self.train_gen, self.valid_gen)
+                                           self.train_gen, self.valid_gen, self.test_gen)
         training_manager.train(batch_size=self.batch, epochs=self.epoch)
+
+        test_manager = EvaluationManager(model, f'{self.checkpoint_dir}/ckpt.h5', self.test_gen)
+        test_manager.evaluate()
 
 
 def parse_arguments():
@@ -54,7 +66,8 @@ def parse_arguments():
     parser.add_argument('--checkpoint_dir', type=str, required=True, help='path to save checkpoints.')
     parser.add_argument('--train_csv', type=str, required=True, help='path to .csv file for train dataset')
     parser.add_argument('--valid_csv', type=str, required=True, help='path to .csv file for validation dataset')
-    parser.add_argument('--in_shape', type=str, default='128,60', required=False, help='The input shape of the model')
+    parser.add_argument('--test_csv', type=str, required=True, help='path to .csv file for test dataset')
+    parser.add_argument('--in_shape', type=str, default='128,191', required=False, help='The input shape of the model')
     
     return parser.parse_args()
 
