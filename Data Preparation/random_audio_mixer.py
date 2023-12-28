@@ -19,8 +19,8 @@ def get_audio_files_recursive(directory):
 
 def process_audio(file1, file2, folder2, output_dir, sample_rate):
     # Load both audio files with the specified sample rate
-    audio1, sr1 = librosa.load(file1, sr=sample_rate)
-    audio2, _ = librosa.load(file2, sr=sample_rate)
+    audio1, sr1 = librosa.load(file1, sr=sample_rate, mono=True)
+    audio2, _ = librosa.load(file2, sr=sample_rate, mono=True)
 
     # Adjust the length of audio1 to match audio2
     len1, len2 = len(audio1), len(audio2)
