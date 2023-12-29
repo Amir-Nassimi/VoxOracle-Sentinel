@@ -1,25 +1,27 @@
 import os
-import sys
+# import sys
 import librosa
 import numpy as np
-from pathlib import Path
+# from pathlib import Path
 from pydub import AudioSegment
 from collections import Counter
+from tensorflow.keras.models import load_model
 
 from frame_proc import FrameASR
 
-sys.path.append(os.path.abspath(Path(__file__).resolve().parents[1]))
-from Train.dense_net import ModelBuilder
+# sys.path.append(os.path.abspath(Path(__file__).resolve().parents[1]))
+# from Train.dense_net import ModelBuilder
 
 
 class Transcribe:
     def __init__(self, model_path, lbl_source, step=0.4, window_size=1.9, sample_rate=16000, history_len=6):
-        model_path = "D:\VoxOracle-Sentinel\Train\On_Training 2\Ckeckpoints\ckpt.h5"
+        model_path = "D:\VoxOracle-Sentinel\Train\On_Training_New\Ckeckpoints\ckpt.keras"
         self.sample_rate = sample_rate
         self.history_len = history_len
         self.chunk_size = int(step * sample_rate)
-        self.model = ModelBuilder((128, 60, 3)).build_model(7)
-        self.model.load_weights(model_path)
+        # self.model = ModelBuilder((128, 60, 3)).build_model(7)
+        # self.model.load_weights(model_path)
+        self.model = load_model(model_path)
         self.mbn = FrameASR(model=self.model, frame_len=step, target_len=window_size,
                             frame_overlap=((window_size-step)/2), label_source=lbl_source)
 

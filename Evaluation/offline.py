@@ -13,7 +13,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_pth", type=str, required=True, help="model path")
     parser.add_argument("--input", type=str, required=True, help="input audio file")
-    parser.add_argument("--sr", type=int, required=True, default=16000, help="model sample rate")
+    parser.add_argument("--sr", type=int, required=False, default=16000, help="model sample rate")
 
     args = parser.parse_args()
 
