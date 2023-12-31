@@ -7,6 +7,7 @@ from pydub import AudioSegment
 from collections import Counter
 from tensorflow.keras.models import load_model
 
+from streamer import Streamer
 from frame_proc import FrameASR
 
 # sys.path.append(os.path.abspath(Path(__file__).resolve().parents[1]))
@@ -72,3 +73,40 @@ class Transcribe:
             signal = (signal[0::2] + signal[1::2]) / 2
 
         return signal, self.mbn.transcribe(signal)
+
+    def online_inference(self):
+        stream = Streamer(self.chunk_size).stream
+        mbn_history = []
+
+        self.mbn.reset()
+        print("hi")
+        while True:
+            data = stream.read(self.chunk_size)
+            signal = np.frombuffer(data, dtype=np.int16)
+            signal = signal.astype(np.float32)/32768.
+            mbn_result, data = self.mbn.transcribe(signal)
+            mbn_history[:-1] = mbn_history[1:]
+
+            if mbn_result==['heyholoo']:
+                mbn_history[-1]=1
+            else:
+                mbn_history[-1]=0
+
+            if mbn_history[1:-1]==[0,0] and mbn_history[-1]==1:
+                result = {'command':'heyholoo', 'detect_time': datetime.datetime.now().strftime('%H:%M:%S')}
+                print(result)
+
+        print('Listening...')
+        stream.start_stream()
+
+        # Interrupt kernel and then speak for a few more words to exit the pyaudio loop !
+        try:
+            while stream.is_active():
+                sleep(0.1)
+
+        finally:
+            stream.stop_stream()
+            stream.close()
+            p.terminate()
+            print()
+            print("PyAudio stopped")
