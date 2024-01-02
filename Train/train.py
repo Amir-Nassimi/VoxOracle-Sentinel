@@ -1,7 +1,7 @@
 import os
 import argparse
 from data_proc import DataPreparation
-from dense_net import ModelBuilder, TrainingManager, EvaluationManager
+from ver_1.dense_net import ModelBuilder, TrainingManager, EvaluationManager
 
 
 class HowToRDTrainer:
