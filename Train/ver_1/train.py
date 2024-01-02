@@ -1,7 +1,11 @@
 import os
+import sys
 import argparse
-from data_proc import DataPreparation
-from ver_1.dense_net import ModelBuilder, TrainingManager, EvaluationManager
+from pathlib import Path
+from dense_net import ModelBuilder, TrainingManager, EvaluationManager
+
+sys.path.append(os.path.abspath(Path(__file__).resolve().parents[0]))
+from ..data_proc import DataPreparation
 
 
 class HowToRDTrainer:

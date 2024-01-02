@@ -1,9 +1,4 @@
-import os
 import argparse
-import sys
-from pathlib import Path
-
-sys.path.append(os.path.abspath(Path(__file__).resolve().parents[0]))
 from transcribe import Transcribe
 
 
