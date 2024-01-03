@@ -1,16 +1,44 @@
 import os
-# import math
 from datetime import datetime
 from singleton_decorator import singleton
 
 from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Layer
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.applications import DenseNet121
 from tensorflow.summary import create_file_writer, scalar
+from tensorflow.keras.backend import tanh, dot, softmax
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 from tensorflow.keras.layers import Dense, BatchNormalization, Dropout
+
+
+class AttentionLayer(Layer):
+    def __init__(self, **kwargs):
+        super(AttentionLayer, self).__init__(**kwargs)
+        self.W = None
+        self.b = None
+
+    def build(self, input_shape):
+        self.W = self.add_weight(name='attention_weight',
+                                 shape=(input_shape[-1], 1),
+                                 initializer='random_normal',
+                                 trainable=True)
+        self.b = self.add_weight(name='attention_bias',
+                                 shape=(1, input_shape[-1]),
+                                 initializer='zeros',
+                                 trainable=True)
+        super(AttentionLayer, self).build(input_shape)
+
+    def call(self, x):
+        e = tanh(dot(x, self.W) + self.b)
+        a = softmax(e, axis=1)
+        output = x * a
+        return output
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
 
 
 @singleton
@@ -19,8 +47,12 @@ class ModelBuilder:
         self.base_model = DenseNet121(weights='imagenet', include_top=False, pooling='avg', input_shape=input_shape)
 
     def build_model(self, no_class):
-        x = BatchNormalization()(self.base_model.output)
+        x = self.base_model.output
+        x = BatchNormalization()(x)
         x = Dropout(0.5)(x)
+
+        x = AttentionLayer()(x)
+
         x = Dense(1024, activation='relu')(x)
         x = Dense(512, activation='relu')(x)
         x = BatchNormalization()(x)
@@ -61,7 +93,6 @@ class TrainingManager:
 
     def train(self, batch_size, epochs):
         _, y = self.train_data[0]
-        #n_batches = math.ceil(len(y) / batch_size)
         checkpoint_filepath = f'{self.checkpoint_dir}/ckpt.h5'
 
         model_checkpoint_callback = ModelCheckpoint(
@@ -69,7 +100,7 @@ class TrainingManager:
             monitor='val_accuracy',
             mode='max',
             save_best_only=True,  # Save only the best model
-            save_weights_only=False,  # Change to True if you want to save only weights
+            save_weights_only=True,  # Change to True if you want to save only weights
             verbose=1,
             save_freq='epoch')
 
