@@ -5,7 +5,6 @@ from singleton_decorator import singleton
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.models import load_model
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.applications import DenseNet121
 from tensorflow.summary import create_file_writer, scalar
@@ -113,8 +112,8 @@ class TrainingManager:
 
 
 class EvaluationManager:
-    def __init__(self, model_pth, test_set):
-        self.model = load_model(model_pth)
+    def __init__(self, model, test_set):
+        self.model = model
         print('Model loaded successfully!')
         self.test_data = test_set
 
