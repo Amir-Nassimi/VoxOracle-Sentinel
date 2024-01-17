@@ -15,8 +15,8 @@ from frame_proc import FrameASR
 
 
 class Transcribe:
-    def __init__(self, model_path, lbl_source, step=0.4, window_size=1.9, sample_rate=16000, history_len=6):
-        model_path = "D:\VoxOracle-Sentinel\Train\On_Training_New\Ckeckpoints\ckpt.keras"
+    def __init__(self, model_path, lbl_source, step, window_size, sample_rate=16000, history_len=6):
+        model_path = "D:/VoxOracle-Sentinel/Train/ver_1/On_Training_New/Ckeckpoints/ckpt.keras"
         self.sample_rate = sample_rate
         self.history_len = history_len
         self.chunk_size = int(step * sample_rate)
