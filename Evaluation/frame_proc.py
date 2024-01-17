@@ -6,7 +6,7 @@ from singleton_decorator import singleton
 from tensorflow.keras.applications.densenet import preprocess_input
 
 sys.path.append(os.path.abspath(Path(__file__).resolve().parents[1]))
-from Feature_Extraction.melspectrogram_extractor import extract_mel_spectrogram
+from Feature_Extraction.melspectrogram_extractor import AudioFeatureExtractor
 
 
 @singleton
@@ -18,6 +18,8 @@ class FrameASR:
         self.sample_rate = sample_rate
         self.label_source = label_source
         self.frame_overlap = frame_overlap
+
+        self.feature_extractor = AudioFeatureExtractor('', '', target_len, sample_rate)
 
         self.n_frame_len = int(frame_len * self.sample_rate)
         self.n_frame_overlap = int(frame_overlap * self.sample_rate)
@@ -39,7 +41,7 @@ class FrameASR:
         self.buffer = np.roll(self.buffer, -self.n_frame_len)
         self.buffer[-self.n_frame_len:] = frame
 
-        spect = extract_mel_spectrogram(self.buffer, self.target_len, self.sample_rate)
+        spect = self.feature_extractor.extract_mel_spectrogram(self.buffer)
         spect = preprocess_input(spect)
 
         result = self.model.predict(np.expand_dims(spect, axis=0))[0]
