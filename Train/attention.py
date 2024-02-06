@@ -1,7 +1,7 @@
 from tensorflow import matmul
+from tensorflow.keras.layers import Layer, Conv1D
 from tensorflow.keras.constraints import MinMaxNorm
 from tensorflow.keras.backend import tanh, dot, softmax
-from tensorflow.keras.layers import Layer, Conv1D, GlobalAveragePooling2D
 from tensorflow.keras.initializers import Constant as Constant_Initializer
 
 
@@ -36,6 +36,8 @@ class GAAPAttentionLayer(Layer):
     def __init__(self, filters, **kwargs):
         super(GAAPAttentionLayer, self).__init__(**kwargs)
         self.filters = filters
+
+    def build(self, input_shape):
         # Convolutional layers for Q, K, V
         self.query_conv = Conv1D(filters=self.filters, kernel_size=1, strides=1, padding='same')
         self.key_conv = Conv1D(filters=self.filters, kernel_size=1, strides=1, padding='same')
@@ -44,10 +46,12 @@ class GAAPAttentionLayer(Layer):
 
         # Learnable alpha parameter
         self.alpha = self.add_weight(name='alpha',
-                                     shape=(),
+                                     shape=(1,),
                                      initializer=Constant_Initializer(0.5),
                                      trainable=True,
                                      constraint=MinMaxNorm(min_value=0.0, max_value=1.0, rate=1.0))
+
+        super(GAAPAttentionLayer, self).build(input_shape)
 
     def call(self, inputs):
         # Generate Q, K, V
@@ -69,7 +73,4 @@ class GAAPAttentionLayer(Layer):
 
         attention_feature_map *= inputs
 
-        # Apply global average pooling
-        gaap_features = GlobalAveragePooling2D()(attention_feature_map)
-
-        return gaap_features
+        return attention_feature_map
