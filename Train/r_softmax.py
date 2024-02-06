@@ -12,7 +12,7 @@ class RSoftmax(Layer):
         # Initialize the sparsity rate as a trainable variable
         self.sparsity_rate = self.add_weight(
             name='sparsity_rate',
-            shape=(),
+            shape=(1,),
             initializer=tf.constant_initializer(self.initial_sparsity_rate),
             trainable=True,
             constraint=lambda x: tf.clip_by_value(x, 0, 1)  # Ensures sparsity rate is between 0 and 1
