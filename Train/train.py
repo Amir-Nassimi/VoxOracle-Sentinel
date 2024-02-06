@@ -1,6 +1,7 @@
 import os
 import argparse
-from dense_net import ModelBuilder, TrainingManager, EvaluationManager
+from dense_net import ModelBuilder
+from managers import TrainingManager, EvaluationManager
 
 from data_proc import DataPreparation
 
