@@ -36,7 +36,7 @@ class DataPreparation(Sequence):
         y = np.empty((self.batch_size), dtype=int)
 
         for i, row in enumerate(temp_data.itertuples()):
-            spect = np.load(f'../{row.file_path}')
+            spect = np.load(row.file_path)
             spect = preprocess_input(spect)  # Preprocess for DenseNet
 
             X[i,] = spect
