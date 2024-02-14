@@ -31,7 +31,7 @@ python volume_based_audio_mover.py --original_folder [input data dir] --destinat
 
 To count the number of audio files shorter than or equal to a specified duration threshold, use the following command:
 ```bash
-python short_audio_counter.py.py [/path/to/directory1] [/path/to/directory2] --threshold [input length]
+python short_audio_counter.py [/path/to/directory1] [/path/to/directory2] --threshold [input length; default=-50.0]
 ```
 ---
 
@@ -67,5 +67,5 @@ It is designed to mix audio files from two different folders, creating a new set
 This script is particularly useful for applications in audio data augmentation, machine learning model training, or any scenario where blending different audio sources is beneficial. The OOP design makes the script modular and easily extendable for future enhancements or adaptations.
 
 ```bash
-python audio_mixer.py --folder1 [/path/to/first/folder] --folder2 [/path/to/second/folder] --output_dir [/path/to/output/folder] --sample_rate [default value: 16000]
+python random_audio_mixer.py --folder1 [/path/to/first/folder] --folder2 [/path/to/second/folder] --output_dir [/path/to/output/folder] --sample_rate [default value: 16000]
 ```
