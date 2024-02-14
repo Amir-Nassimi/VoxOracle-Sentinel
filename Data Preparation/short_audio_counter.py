@@ -1,5 +1,6 @@
 import os
 import argparse
+from tqdm import tqdm
 from pydub import AudioSegment
 from pydub.silence import detect_nonsilent
 
@@ -17,7 +18,7 @@ def remove_silence_from_edges(audio_path, silence_thrsh):
 def count_short_audios(input_dirs, threshold_length, silence_thrsh):
     short_audios = 0
 
-    for input_dir in input_dirs:
+    for input_dir in tqdm(input_dirs, desc='Analyzing directories'):
         for root, _, files in os.walk(input_dir):
             for file in files:
                 audio_path = os.path.join(root, file)
