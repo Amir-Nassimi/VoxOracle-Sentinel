@@ -1,5 +1,6 @@
 import os
 import argparse
+from tqdm import tqdm
 from pydub import AudioSegment
 from pydub.silence import detect_nonsilent
 
@@ -36,7 +37,7 @@ def process_file(file_path, target_length, silence_thrsh):
 def process_directory(directory_path, target_length, silence_thrsh, output_dir):
     os.makedirs(output_dir, exist_ok=True)  # Create the output directory if it doesn't exist
 
-    for filename in os.listdir(directory_path):
+    for filename in tqdm(os.listdir(directory_path), desc='Analyzing files'):
         if filename.endswith(".wav"):
             file_path = os.path.join(directory_path, filename)
             padded_audio = process_file(file_path, target_length, silence_thrsh)
