@@ -11,8 +11,9 @@ from Feature_Extraction.melspectogram_extractor import AudioFeatureExtractor
 
 @singleton
 class FrameASR:
-    def __init__(self, model, frame_len, target_len, frame_overlap, label_source, sample_rate=16000):
+    def __init__(self, model, frame_len, target_len, frame_overlap, label_source, pr_acc, sample_rate=16000):
         self.model = model
+        self.pr_acc = pr_acc / 100
         self.frame_len = frame_len
         self.target_len = target_len
         self.sample_rate = sample_rate
@@ -48,10 +49,12 @@ class FrameASR:
             result = self.model.predict(np.expand_dims(spect, axis=0))[0]
             print(result)
         except Exception as error:
-            print("hi")
             raise ValueError(f'Error: {error}')
         return self.decode_pred(result)
 
     def decode_pred(self, result):
-        label_num = np.argmax(result)
-        return self.label_source.get(label_num, "unknown")
+        if np.max(result) < self.pr_acc:
+            return 'unknown'
+        else:
+            label_num = np.argmax(result)
+            return self.label_source.get(label_num, "unknown")
