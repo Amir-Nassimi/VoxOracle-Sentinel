@@ -1,9 +1,11 @@
-import os
+import sys, os
 import argparse
-from dense_net import ModelBuilder
-from managers import TrainingManager, EvaluationManager
+from pathlib import Path
 
-from data_proc import DataPreparation
+sys.path.append(os.path.abspath(Path(__file__).resolve().parents[1]))
+from Train.dense_net import ModelBuilder
+from Train.data_proc import DataPreparation
+from Train.managers import TrainingManager, EvaluationManager
 
 
 class HowToRDTrainer:
@@ -73,7 +75,7 @@ def parse_arguments():
     parser.add_argument('--train_csv', type=str, required=True, help='path to .csv file for train dataset')
     parser.add_argument('--valid_csv', type=str, required=True, help='path to .csv file for validation dataset')
     parser.add_argument('--test_csv', type=str, required=True, help='path to .csv file for test dataset')
-    parser.add_argument('--in_shape', type=str, default='128,191', required=False, help='The input shape of the model')
+    parser.add_argument('--in_shape', type=str, default='128,211', required=False, help='The input shape of the model')
     parser.add_argument('--initial_sparsity_rate', type=float, required=False, default=0.5,
                         help='The Initial Sparsity Rate of R_Softmax; default value: 0.5')
     parser.add_argument('--softmax_type', type=str, required=False, default='normal',
