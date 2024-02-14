@@ -1,12 +1,14 @@
-
+import sys, os
+from pathlib import Path
 from singleton_decorator import singleton
 
 from tensorflow.keras.models import Model
 from tensorflow.keras.applications import DenseNet121
 from tensorflow.keras.layers import Dense, BatchNormalization, Dropout, Softmax, GlobalAveragePooling2D
 
-from r_softmax import RSoftmax
-from attention import NormalAttentionLayer, GAAPAttentionLayer
+sys.path.append(os.path.abspath(Path(__file__).resolve().parents[1]))
+from Train.r_softmax import RSoftmax
+from Train.attention import NormalAttentionLayer, GAAPAttentionLayer
 
 
 @singleton
@@ -23,8 +25,10 @@ class ModelBuilder:
         elif attention_type == 'gaap':
             x = GAAPAttentionLayer(self.base_model.layers[-1].output_shape[-1])(x)
             x = GlobalAveragePooling2D()(x)
-        else:
+        elif attention_type == 'no_attention':
             x = GlobalAveragePooling2D()(x)
+        else:
+            raise ValueError(f'Invalid attention type : {attention_type}')
 
         x = Dropout(0.5)(x)
         x = BatchNormalization()(x)
