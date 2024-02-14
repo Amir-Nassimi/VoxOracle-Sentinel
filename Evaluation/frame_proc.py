@@ -19,7 +19,7 @@ class FrameASR:
         self.label_source = label_source
         self.frame_overlap = frame_overlap
 
-        self.feature_extractor = AudioFeatureExtractor('', '', target_len, sample_rate)
+        self.feature_extractor = AudioFeatureExtractor('', '', '', target_len, sample_rate)
 
         self.n_frame_len = int(frame_len * self.sample_rate)
         self.n_frame_overlap = int(frame_overlap * self.sample_rate)
@@ -44,7 +44,10 @@ class FrameASR:
         spect = self.feature_extractor.extract_mel_spectrogram(self.buffer)
         spect = preprocess_input(spect)
 
-        result = self.model.predict(np.expand_dims(spect, axis=0))[0]
+        try:
+            result = self.model.predict(np.expand_dims(spect, axis=0))[0]
+        except Exception as error:
+            raise ValueError(f'Error: {error}')
         return self.decode_pred(result)
 
     def decode_pred(self, result):
