@@ -6,7 +6,7 @@ from singleton_decorator import singleton
 from tensorflow.keras.applications.densenet import preprocess_input
 
 sys.path.append(os.path.abspath(Path(__file__).resolve().parents[1]))
-from Feature_Extraction.melspectrogram_extractor import AudioFeatureExtractor
+from Feature_Extraction.melspectogram_extractor import AudioFeatureExtractor
 
 
 @singleton
@@ -46,7 +46,9 @@ class FrameASR:
 
         try:
             result = self.model.predict(np.expand_dims(spect, axis=0))[0]
+            print(result)
         except Exception as error:
+            print("hi")
             raise ValueError(f'Error: {error}')
         return self.decode_pred(result)
 
