@@ -63,5 +63,5 @@ The provided Python script is an audio feature extraction tool, primarily design
 In summary, this script is a specialized tool for extracting Mel Spectrogram features from audio files, useful for tasks like audio analysis, machine learning, and signal processing where such features are relevant. The script facilitates batch processing of audio files and organizes the extracted features in a structured and easily accessible format.
 
 ```bash
-python your_script_name.py --audio_dir /path/to/audio_files --numpy_dir /path/to/numpy_files --pickle_path /path/to/save/pickle --target_len [2.0]
+python melspectogram_extractor.py --audio_dir /path/to/audio_files --numpy_dir /path/to/numpy_files --pickle_path /path/to/save/pickle --target_len [2.0]
 ```
