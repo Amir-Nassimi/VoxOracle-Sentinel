@@ -1,30 +1,36 @@
 import os
-# import sys
+import sys
 import librosa
 import numpy as np
-# from pathlib import Path
+from pathlib import Path
 from pydub import AudioSegment
 from collections import Counter
-from tensorflow.keras.models import load_model
 
 from streamer import Streamer
 from frame_proc import FrameASR
 
-# sys.path.append(os.path.abspath(Path(__file__).resolve().parents[1]))
-# from Train.dense_net import ModelBuilder
+sys.path.append(os.path.abspath(Path(__file__).resolve().parents[1]))
+from Train.dense_net import ModelBuilder
 
 
 class Transcribe:
-    def __init__(self, model_path, lbl_source, step, window_size, sample_rate=16000, history_len=6):
-        model_path = "D:/VoxOracle-Sentinel/Train/ver_1/On_Training_New/Ckeckpoints/ckpt.keras"
+    def __init__(self, model_path, lbl_source, step, window_size, attention_type, softmax_type, sparsity_rate,
+                 sample_rate=16000, history_len=6, in_shape=(128, 211, 3), pr_acc=30):
+        model_path = "D:/VoxOracle-Sentinel/Train/Ultimate_Version/Train_4/checkpoint2/8-0.97_0.89.hdf5"
         self.sample_rate = sample_rate
         self.history_len = history_len
         self.chunk_size = int(step * sample_rate)
-        # self.model = ModelBuilder((128, 60, 3)).build_model(7)
-        # self.model.load_weights(model_path)
-        self.model = load_model(model_path)
+
+        self.model = ModelBuilder(in_shape).build_model(len(lbl_source), attention_type, softmax_type, sparsity_rate)
+        try:
+            self.model.load_weights(model_path)
+            print("Weights loaded successfully!!")
+        except Exception as error:
+            print(f"ValueError: Error on loading weights: {error}")
+            raise ValueError(f"Error on loading weights: {error}")
+
         self.mbn = FrameASR(model=self.model, frame_len=step, target_len=window_size,
-                            frame_overlap=((window_size-step)/2), label_source=lbl_source)
+                            frame_overlap=((window_size-step)/2), label_source=lbl_source, pr_acc=pr_acc)
 
     @staticmethod
     def generate_audio_chunks(audio, chunk_size):
@@ -79,7 +85,7 @@ class Transcribe:
         mbn_history = []
 
         self.mbn.reset()
-        print("hi")
+
         while True:
             data = stream.read(self.chunk_size)
             signal = np.frombuffer(data, dtype=np.int16)
