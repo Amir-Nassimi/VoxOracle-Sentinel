@@ -1,9 +1,12 @@
-import os
+import sys, os
+from pathlib import Path
 from datetime import datetime
+
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 
-from train_handlers import CustomCheckpoint, TestSetEvaluationCallback, StopAtAccuracy
+sys.path.append(os.path.abspath(Path(__file__).resolve().parents[1]))
+from Train.train_handlers import CustomCheckpoint, TestSetEvaluationCallback, StopAtAccuracy
 
 
 class TrainingManager:
