@@ -16,7 +16,7 @@ from Train.dense_net import ModelBuilder
 class Transcribe:
     def __init__(self, model_path, lbl_source, step, window_size, attention_type, softmax_type, sparsity_rate,
                  sample_rate=16000, history_len=6, in_shape=(128, 211, 3), pr_acc=30):
-        model_path = "D:/VoxOracle-Sentinel/Train/Ultimate_Version/Train_4/checkpoint2/8-0.97_0.89.hdf5"
+
         self.sample_rate = sample_rate
         self.history_len = history_len
         self.chunk_size = int(step * sample_rate)
