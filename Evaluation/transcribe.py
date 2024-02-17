@@ -81,38 +81,20 @@ class Transcribe:
         return signal, self.mbn.transcribe(signal)
 
     def online_inference(self):
-        stream = Streamer(self.chunk_size).stream
+        stream = Streamer(self.chunk_size, sample_rate=self.sample_rate).stream
         mbn_history = []
 
         self.mbn.reset()
-
-        while True:
-            data = stream.read(self.chunk_size)
-            signal = np.frombuffer(data, dtype=np.int16)
-            signal = signal.astype(np.float32)/32768.
-            mbn_result, data = self.mbn.transcribe(signal)
-            mbn_history[:-1] = mbn_history[1:]
-
-            if mbn_result==['heyholoo']:
-                mbn_history[-1]=1
-            else:
-                mbn_history[-1]=0
-
-            if mbn_history[1:-1]==[0,0] and mbn_history[-1]==1:
-                result = {'command':'heyholoo', 'detect_time': datetime.datetime.now().strftime('%H:%M:%S')}
-                print(result)
-
-        print('Listening...')
-        stream.start_stream()
-
-        # Interrupt kernel and then speak for a few more words to exit the pyaudio loop !
         try:
-            while stream.is_active():
-                sleep(0.1)
+            while True:
+                data, overflow_flag = stream.read(self.chunk_size)
+                _, mbn_result = self._process_signal(data.squeeze())
+                mbn_history[:-1] = mbn_history[1:]
+
+                mbn_history.append(mbn_result)
+                # Handle history and most common command calculation
+                if len(mbn_history) > self.history_len:
+                    mbn_history.pop(0)
 
         finally:
-            stream.stop_stream()
-            stream.close()
-            p.terminate()
-            print()
-            print("PyAudio stopped")
+            stream.stop()
