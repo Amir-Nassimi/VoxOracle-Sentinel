@@ -3,6 +3,7 @@ import sys
 import librosa
 import numpy as np
 from pathlib import Path
+from itertools import groupby
 from pydub import AudioSegment
 from collections import Counter
 
@@ -60,9 +61,16 @@ class Transcribe:
         return most_common_cmd
 
     @staticmethod
-    def _get_most_common_cmd(mbn_history):
-        counter = Counter(mbn_history)
-        return counter.most_common(1)[0]
+    def _get_most_common_cmd(mbn_history, flag=False):
+        if flag:
+            counter = Counter(mbn_history)
+            return counter.most_common(1)[0]
+        else:
+            counts = [(k, sum(1 for _ in g)) for k, g in groupby(mbn_history)]
+
+            max_count = max(c[1] for c in counts)
+            max_seqs = [c[0] for c in counts if c[1] == max_count]
+            return max_seqs
 
     @staticmethod
     def _overlay_chime(chime_file, wave_name, wave_file, outdir, detection_time):
