@@ -1,20 +1,19 @@
 import sounddevice as sd
 from singleton_decorator import singleton
 
-
 @singleton
 class Streamer:
-    def __init__(self, chunk_size, channels=1):
+    def __init__(self, chunk_size, sample_rate, channels=1):
         device = self.get_available_devices()
         if device is not None:
             device_indx, sr = self.choose_device(device)
         else:
             raise Exception('Please insert a device to continue...')
+
         self._stream = sd.InputStream(device=device_indx,
                                       channels=channels,
-                                      samplerate=sr,
+                                      samplerate=sample_rate,
                                       blocksize=chunk_size)
-        print("hey")
         self._stream.start()
 
     @property
