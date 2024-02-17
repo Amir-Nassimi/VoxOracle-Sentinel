@@ -2,6 +2,7 @@ import os
 import sys
 import numpy as np
 from pathlib import Path
+from collections import deque
 from singleton_decorator import singleton
 from tensorflow.keras.applications.densenet import preprocess_input
 
@@ -25,24 +26,25 @@ class FrameASR:
         self.n_frame_len = int(frame_len * self.sample_rate)
         self.n_frame_overlap = int(frame_overlap * self.sample_rate)
 
-        buffer_len = (2*self.n_frame_overlap) + self.n_frame_len
-        self.buffer = np.zeros(buffer_len, dtype=np.float32)
+        self.buffer_len = (2*self.n_frame_overlap) + self.n_frame_len
+        self.buffer = deque(np.zeros(self.buffer_len), maxlen=self.buffer_len)
         self.reset()
 
     def reset(self):
-        self.buffer.fill(0.0)  # Reset buffer
+        self.buffer.extend(np.zeros(self.buffer_len))
 
     def transcribe(self, frame):
         if len(frame) == 0:
             frame = np.zeros(self.n_frame_len, dtype=np.float32)
-        elif len(frame) < self.n_frame_len:
-            frame = np.pad(frame, (0, self.n_frame_len - len(frame)), 'constant')
+        # elif len(frame) < self.n_frame_len:
+        #     frame = np.pad(frame, (0, self.n_frame_len - len(frame)), 'constant')
 
         # Update buffer with new frame
-        self.buffer = np.roll(self.buffer, -self.n_frame_len)
-        self.buffer[-self.n_frame_len:] = frame
+        # self.buffer = np.roll(self.buffer, -self.n_frame_len)
+        # self.buffer[-self.n_frame_len:] = frame
+        self.buffer.extend(frame)
 
-        spect = self.feature_extractor.extract_mel_spectrogram(self.buffer)
+        spect = self.feature_extractor.extract_mel_spectrogram(np.array(self.buffer))
         spect = preprocess_input(spect)
 
         try:
