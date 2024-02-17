@@ -6,6 +6,7 @@ from pathlib import Path
 from itertools import groupby
 from pydub import AudioSegment
 from collections import Counter
+from sounddevice import PortAudioError
 
 from streamer import Streamer
 from frame_proc import FrameASR
@@ -89,7 +90,17 @@ class Transcribe:
         return signal, self.mbn.transcribe(signal)
 
     def online_inference(self):
-        stream = Streamer(self.chunk_size, sample_rate=self.sample_rate).stream
+        try:
+            stream = Streamer(self.chunk_size, sample_rate=self.sample_rate).stream
+
+        except PortAudioError as e:
+            print(f"PortAudioError: {e}")
+            raise ValueError(f"PortAudioError: {e}")
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            raise ValueError(f"An error occurred: {e}")
+
         mbn_history = []
 
         self.mbn.reset()
@@ -100,9 +111,15 @@ class Transcribe:
                 mbn_history[:-1] = mbn_history[1:]
 
                 mbn_history.append(mbn_result)
+
                 # Handle history and most common command calculation
                 if len(mbn_history) > self.history_len:
                     mbn_history.pop(0)
+
+                # Calculate the most common command after processing all chunks
+                print(mbn_history)
+                result = self._get_most_common_cmd(mbn_history)
+                print(result)
 
         finally:
             stream.stop()
