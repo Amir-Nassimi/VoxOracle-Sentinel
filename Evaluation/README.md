@@ -2,7 +2,7 @@
 
 ## Evaluating The Model
 
-### Online run(online.py)
+### Online run (online.py)
 
 **Purpose**
 
@@ -34,6 +34,66 @@ This allows customizing parameters like:
 - Prediction confidence threshold
 
 And then performs streaming speech transcription accordingly through the Transcribe pipeline. So it provides a configurable entry point harnessing Transcribe's underlying functionality.
+
+**Caution** : Don't forget to add the pickle file containing your desired labels. To do so, we suggest utilizing pickle.dumb to create pickle file. The overall format should be similar to the following pattern:
+  ```bash
+  labels = {
+      0: 'Label1',
+      1: 'Label2',
+      2: 'Label3',
+      3: 'Label4',
+      # ... and so on for other labels
+  }
+  ```
+
+---
+
+### Offline run (offline.py)
+
+**Purpose**:
+
+- Provide a command line tool to transcribe a given audio file using a pretrained model
+- Allow customizing Transcribe parameters  
+
+- **Key Components**:
+
+  - `parser`:  
+    - Defines arguments like model path, audio file, output labels etc
+  
+  - `main()`:
+    - Load model, labels, config params from CLI args 
+    - Create Transcribe object configured with those params
+    - Call offline_inference() on given audio file path
+    - Print out the transcription result
+  
+Overall it provides an easy way to:
+
+1. Load model and labels
+2. Parse command line for input file and parameters
+3. Initialize a Transcribe instance 
+4. Run that Transcribe workflow on the file 
+5. Output transcribed text
+
+This enables configuring Transcribe to user's needs, while handling the underlying model and feature extraction automatically.
+
+Some key parameters exposed:
+- Audio window size
+- Step size between windows
+- Model sparsity and attention settings
+- Output label set customization
+
+So in summary, it adds a simple harness for transcribing audio files leveraging Transcribe's capabilities.
+
+**Caution** : Don't forget to add the pickle file containing your desired labels. To do so, we suggest utilizing pickle.dumb to create pickle file. The overall format should be similar to the following pattern:
+  ```bash
+  labels = {
+      0: 'Label1',
+      1: 'Label2',
+      2: 'Label3',
+      3: 'Label4',
+      # ... and so on for other labels
+  }
+  ```
 
 ---
 
