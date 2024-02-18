@@ -38,7 +38,7 @@ def main():
     in_shape = tuple(map(int, args.in_shape.split(','))) + (3,)
 
     transcribe = Transcribe(args.model_pth, labels, args.step, args.window_size, args.attention_type,
-                            args.softmax_type, args.initial_sparsity_rate, in_shape=in_shape, pr_acc=args.acc_thrs)
+                            args.softmax_type, args.initial_sparsity_rate, in_shape=args.in_shape, pr_acc=args.acc_thrs)
     result = transcribe.offline_inference(args.input)
     print(result)
 
