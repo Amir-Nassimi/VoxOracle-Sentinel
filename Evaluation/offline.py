@@ -27,8 +27,6 @@ def main():
 
     args = parser.parse_args()
 
-    # labels = {0:'Ahange-Ghabli',1:'Barname-Panjom',2:'Seda-Kam-Kon'}
-
     try:
         with open(args.labels_file, 'rb') as file:
             labels = pickle.load(file)
